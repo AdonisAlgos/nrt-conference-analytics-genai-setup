@@ -1,4 +1,5 @@
 from openai import OpenAI
+from pyannote.audio import Pipeline
 import os
 from os import path
 from dotenv import load_dotenv
@@ -9,10 +10,10 @@ load_dotenv()
 OPEN_AI_TOKEN = os.getenv('AI_TOKEN')
 TEMP_FOLDER = './data'
 
-class transcription():
+class Transcription():
     SYSTEM_PROMPT = ''
 
-    # def __init__(self) -> None:
+    def __init__(self) -> None:
         # self.SYSTEM_PROMPT = "You are a helpful transcription assistant. "
         # self.SYSTEM_PROMPT += "Your task is analyze a timestamped transcription of a conference. "
         # self.SYSTEM_PROMPT += "The number of speakers can vary. "
@@ -29,7 +30,16 @@ class transcription():
         # self.SYSTEM_PROMPT += "Read the dialog line by line, and change speaker based on sentence structure. "
         # self.SYSTEM_PROMPT += "Furthermore, you are to correct any spelling discrepancies in the transcribed text, "
         # self.SYSTEM_PROMPT += "adding necessary punctuation such as periods, commas, and capitalization, and use only the context provided. "
-    #     self.SYSTEM_PROMPT += "Do not add any additional context or information that is not present in the dialogue. "
+        self.SYSTEM_PROMPT += "Do not add any additional context or information that is not present in the dialogue. "
+
+    def diarize_audio(self,audio_file_path):
+    # Initialize the diarization pipeline
+        pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization")
+        
+        # Apply diarization pipeline to your audio file
+        diarization = pipeline(audio_file_path)
+        
+        return diarization
         
     # def correct_trascript(self, trascripted_text: str, temperature = 0)->str:        
     #     client = OpenAI(api_key = OPEN_AI_TOKEN)
