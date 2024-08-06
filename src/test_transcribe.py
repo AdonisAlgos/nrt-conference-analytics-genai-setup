@@ -4,11 +4,14 @@ from transcribe import Transcriber
 class TestTranscriberIntegration(unittest.TestCase):
     def test_transcribe_real(self):
         transcriber = Transcriber()
-        result = transcriber.transcribe("test_audio.m4a")
-        diarised_result = transcriber.diarise(result.segments)
+        transcript_text = transcriber.transcribe("test_audio.m4a")
+        diarised_transcript = transcriber.correct_transcript(transcript_text)
 
-        self.assertIsInstance(result["text"], str)
-        self.assertIsInstance(diarised_result, list)
+        print(transcript_text)
+        print(diarised_transcript)
+
+        self.assertIsInstance(transcript_text, str)
+        self.assertIsInstance(diarised_transcript, str)
 
 if __name__ == '__main__':
     unittest.main()
