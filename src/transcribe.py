@@ -21,7 +21,9 @@ class Transcriber:
             "4. Explicit Mention of Different People: Look for mentions or references to different individuals.\n"
             "5. Logical Breaks or Pauses: Note any natural breaks or pauses that suggest a switch in speakers.\n"
             "6. Contextual Consistency: Ensure the context flows logically. If it feels disjointed, a speaker change "
-            "may have occurred.\n\n"
+            "may have occurred.\n"
+            "7. Tokenization: Replace sensitive information such as names, company names, and specific locations with tokens. Use tokens like '[Name1]', '[Company1]', '[Location1]'.\n\n"
+
         )
         self.SYSTEM_PROMPT += (
             "Examples:\n"
