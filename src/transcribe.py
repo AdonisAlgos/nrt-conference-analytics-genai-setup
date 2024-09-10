@@ -6,73 +6,34 @@ from datetime import datetime
 load_dotenv()
 
 class TranscriptionHandler:
-    
-
 
     SYSTEM_PROMPT = ''
 
     def __init__(self) -> None:
-
         self.api_key = os.getenv('AI_TOKEN')
-        self.client = self.init_client()
+        self.client = self._init_client()
 
-        self.SYSTEM_PROMPT = (
-            "You are a helpful transcription assistant. Your task is to analyze a transcription of a conference, "
-            "identify when the speaker changes, and appropriately tokenize sensitive information. You must strictly adhere "
-            "to the instructions provided by the user, ensuring that you do not add any commentary or text before or after your response.\n\n"
-        )
-        self.SYSTEM_PROMPT += (
-            "The following text is a transcript of a recorded reflection session about a conference. The purpose of this session "
-            "is to capture feedback on the conference. Use the guidelines below to accurately identify speaker changes and tokenize sensitive information.\n\n"
-        )
-        self.SYSTEM_PROMPT += (
-            "### Speaker Change Guidelines:\n\n"
-            "- **Abrupt Change in Talking Point**: Identify shifts in the topic of conversation that may indicate a new speaker.\n"
-            "- **Personal References**: Notice changes in perspective, especially shifts in personal pronouns (e.g., 'I' vs. 'we').\n"
-            "- **Distinctive Style or Content**: Pay attention to differences in speaking style or content that suggest a different speaker.\n"
-            "- **Explicit Mention of Different People**: Look for mentions or references to different individuals, which may signal a speaker change.\n"
-            "- **Logical Breaks or Pauses**: Note any natural breaks or pauses that could indicate a transition to a new speaker.\n"
-            "- **Contextual Consistency**: Ensure the context flows logically. If the flow seems disjointed, a speaker change may have occurred.\n\n"
-        )
-        self.SYSTEM_PROMPT += (
-            "### Tokenization Guidelines:\n\n"
-            "- **Sensitive Information**: Replace sensitive information such as names, company names, and specific locations with tokens. Use tokens like '[Name1]', '[Company1]', '[Location1]'.\n\n"
-        )
-        self.SYSTEM_PROMPT += (
-            "### Examples:\n\n"
-            "1. **Abrupt Change in Topic**:\n"
-            "   - 'We had a great time at the conference.'\n"
-            "   - 'I think the keynote speaker was very inspiring.'\n"
-            "   - **Label**:\n"
-            "     - [Speaker 1] 'We had a great time at the conference.'\n"
-            "     - [Speaker 2] 'I think the keynote speaker was very inspiring.'\n\n"
-        )
-        self.SYSTEM_PROMPT += (
-            "2. **Change in Pronouns or Perspective**:\n"
-            "   - 'I found the workshop very informative.'\n"
-            "   - 'We also need to consider the budget for next year.'\n"
-            "   - **Label**:\n"
-            "     - [Speaker 1] 'I found the workshop very informative.'\n"
-            "     - [Speaker 2] 'We also need to consider the budget for next year.'\n\n"
-        )
-        self.SYSTEM_PROMPT += (
-            "3. **Distinctive Style or Content**:\n"
-            "   - 'The technical details were fascinating.'\n"
-            "   - 'Yes, but we must focus on implementation.'\n"
-            "   - **Label**:\n"
-            "     - [Speaker 1] 'The technical details were fascinating.'\n"
-            "     - [Speaker 2] 'Yes, but we must focus on implementation.'\n\n"
-        )
-        self.SYSTEM_PROMPT += (
-            "### Final Instructions:\n\n"
-            "Apply these principles to every line in the transcript. Do not assume that each line alternates between speakers. "
-            "Carefully read the dialogue line by line, and determine speaker changes based on sentence structure and context. "
-            "Additionally, correct any spelling errors in the transcribed text, add necessary punctuation (such as periods, commas, "
-            "and capitalization), and rely solely on the provided context. Do not introduce any additional information or context "
-            "that is not present in the transcript."
-        )
+        self.SYSTEM_PROMPT = "You are a helpful transcription assistant."
+        self.SYSTEM_PROMPT += "Your task is to analyze a timestamped transcription of a feedback dialogue between two individuals at a conference."
+        self.SYSTEM_PROMPT += "One of the individuals is the Operator and the other is the Attendee."
+        self.SYSTEM_PROMPT += "You are to infer based on the dialogue who is saying what, and inject the speaker into each line using the following format: "
+        self.SYSTEM_PROMPT += "For example, if the lines are:\n"
+        self.SYSTEM_PROMPT += "15.0-20.0: Did you have a good day today?\n"
+        self.SYSTEM_PROMPT += "20.0-26.0: Yeah, it was alright.\n"
+        self.SYSTEM_PROMPT += "26.0-29.0: I particularly enjoyed the latter workshops.\n"
+        self.SYSTEM_PROMPT += "29.0-36.0: They were so educating and can't wait for what is to come next.\n\n"
+        self.SYSTEM_PROMPT += "Then you should return:\n"
+        self.SYSTEM_PROMPT += "15.0-20.0: [Operator] Did you have a good day today?\n"
+        self.SYSTEM_PROMPT += "20.0-26.0: [Attendee] Yeah, it was alright. 26.0-29.0: [Attendee] I particularly enjoyed the latter workshops. 29.0-36.0: [Attendee] They were so educating and can't wait for what is to come next.\n\n"
+        self.SYSTEM_PROMPT += "If a single sentence or dialogue is split across multiple timestamped segments, combine them into one line with the first timestamp, as demonstrated above."
+        self.SYSTEM_PROMPT += "You should do this for every single line in the transcript."
+        self.SYSTEM_PROMPT += "Do not assume that each line is alternating between Operator and Attendee."
+        self.SYSTEM_PROMPT += "Read the dialogue line by line and change speakers based on the sentence structure."
+        self.SYSTEM_PROMPT += "Additionally, you are to tokenize any sensitive information and correct any spelling discrepancies in the transcribed text."
+        self.SYSTEM_PROMPT += "Add necessary punctuation such as periods, commas, and capitalization, and use only the context provided."
+        self.SYSTEM_PROMPT += "Do not add any additional information or change the meaning of the text."
 
-    def init_client(self):
+    def _init_client(self):
         try:
             client = OpenAI(api_key = self.api_key)
             print(f'[{datetime.now()}]: OpenAI client initialized successfully.')
